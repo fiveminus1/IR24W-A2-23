@@ -21,10 +21,18 @@ def extract_next_links(url, resp):
     #         resp.raw_response.url: the url, again
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
+    stopwords = set(line.strip() for line in open('stopwords.txt'))
+
+    page_and_counters = open("page_and_wordcounters.txt", 'w')
+    page_word_dict = dict()
     unique_pages = set()
     next_links = list()
     if resp.status == 200:
         soup = BeautifulSoup(resp.raw_response.content, 'lxml')
+        if is_valid(url):
+            page_and_counters.write(str(url) + ' ' + str(count_words(soup)))
+            page_word_dict[url] = count_words(soup)
+
         for a in soup.find_all('a'):
             link = a.get('href')
             if is_valid(link):
@@ -32,7 +40,13 @@ def extract_next_links(url, resp):
                 next_links.append(defragged_link)
                 unique_pages.add(defragged_link)
 
+
     return next_links
+
+def count_words(soup: BeautifulSoup) -> int:
+    text = soup.get_text()
+    word_count = len(text.split())
+    return word_count
 
 def is_valid(url):
     # Decide whether to crawl this url or not. 
