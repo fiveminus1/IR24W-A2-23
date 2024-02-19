@@ -67,10 +67,18 @@ def extract_next_links(url, resp):
 
 
 def is_crawler_trap(url, resp) -> bool:
+    year_pattern = r'\b(?:19|20)\d{2}\b'
     if redirects[url] == resp.url: # if a page has already been redirected to the same page, we can skip it and/or assume it's a trap
         return True
     if visited_pages[url] > 10: # test threshold; if a page has already been visited over 10 times, we can stop visiting it and/or assume it's a trap
         return True
+    for path in urlparse(url).path.split("/"): #check if contains date, event, ml datasets for possible traps
+        if path == "ml" or path == "events":
+            return True
+        if re.search(year_pattern, path):
+            return True
+
+    return False
 
 
 def create_analytics_files(page_word_counts: defaultdict, common_words: defaultdict,
