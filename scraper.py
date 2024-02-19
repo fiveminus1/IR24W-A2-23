@@ -2,6 +2,8 @@ import re
 import urllib.parse
 from urllib.parse import urlparse
 import requests
+import json
+import datetime
 from bs4 import BeautifulSoup
 
 import utils.response
@@ -23,7 +25,9 @@ def extract_next_links(url, resp):
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
     stopwords = set(line.strip() for line in open('stopwords.txt'))
 
-    page_and_counters = open("page_and_wordcounters.txt", 'w')
+
+
+    page_and_counters = open("analytics/page_and_wordcounters.txt", 'w')
     page_word_dict = dict()
     unique_pages = set()
     next_links = list()
@@ -42,6 +46,22 @@ def extract_next_links(url, resp):
 
 
     return next_links
+
+def create_analytics_files(page_word_counts: dict, common_words: dict, subdomains: dict, redirects: dict) -> None:
+    '''
+    Creates the following analytics json files
+    1. Pages and their word counts
+    2. Common words
+    3. Subdomains
+    4. Redirects
+
+    :return: Returns a tuple of three paths
+    '''
+    current_date_time = datetime.datetime.now().strftime("%m-%d %H.%m")
+
+
+def close_analytics_files() -> None:
+    pass
 
 def count_words(soup: BeautifulSoup) -> int:
     text = soup.get_text()
