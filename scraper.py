@@ -34,7 +34,7 @@ def extract_next_links(url, resp):
     if resp.status == 200:
         soup = BeautifulSoup(resp.raw_response.content, 'lxml')
         if is_valid(url):
-            word_count = count_words(soup, common_words, stopwords) # writes word count of this page to page_word_counts dict (#2 report)
+            word_count = count_words(soup, common_words, stopwords) # writes word count of this page to page_word_counts dict (#2 report) and writes common words (#3 report)
             page_word_counts[url] = word_count
 
             if word_count > general_analytics["longest_page_word_count"]: #if this page's word count is greater than the longest page, set it in general analytics (#2 report)
