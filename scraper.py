@@ -33,12 +33,14 @@ def extract_next_links(url, resp):
     if resp.status == 200:
         soup = BeautifulSoup(resp.raw_response.content, 'lxml')
         if is_valid(url):
-            page_word_counts[url] = count_words(soup)
+            page_word_counts[url] = count_words(soup) # writes word count of this page to page_word_counts dict (#2 requirement)
 
         for a in soup.find_all('a'):
             link = a.get('href')
             if is_valid(link):
                 defragged_link = link.split("#")[0]
+                if defragged_link not in unique_pages:
+                    general_analytics["uniques"] += 1 # if site not found in unique pages, adds to general analytics unique page counter (#1 requirement)
                 next_links.append(defragged_link)
                 unique_pages.add(defragged_link)
 
