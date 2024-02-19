@@ -29,11 +29,14 @@ def extract_next_links(url, resp):
 
     unique_pages = set()
     next_links = list()
+    parsed_url = urlparse(url)
 
     if resp.status == 200:
         soup = BeautifulSoup(resp.raw_response.content, 'lxml')
         if is_valid(url):
             page_word_counts[url] = count_words(soup) # writes word count of this page to page_word_counts dict (#2 requirement)
+            if parsed_url.hostname[0] != "ics" and parsed_url.hostname[1] == "ics": #writes to subdomain dict for urls under ics.uci.edu domain (#4 requirement)
+                subdomains[str(parsed_url.hostname)] += 1
 
         for a in soup.find_all('a'):
             link = a.get('href')

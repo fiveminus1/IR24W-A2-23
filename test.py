@@ -7,11 +7,14 @@ import json
 from collections import defaultdict
 
 #url = 'https://crawler-test.com/links/page_with_external_links'
-url = "https://ics.uci.edu"
+url = "https://cs.ics.uci.edu"
 #url = "https://ics.uci.edu/~thornton/ics46/Notes/SmartPointers/"
 grab = requests.get(url)
 soup = BeautifulSoup(grab.text, 'lxml')
+parsed_url = urllib.parse.urlparse(url)
 
+
+print(parsed_url.hostname.split('.'))
 
 page_word_counts = defaultdict(int)
 common_words = defaultdict(int)
@@ -19,14 +22,15 @@ subdomains = defaultdict(int)
 redirects = defaultdict(int)
 general_analytics = defaultdict(int)
 
-page_word_counts["ics.uci.edu"] = 1001
-common_words["the"] = 500
-subdomains["ics.uci.edu"] = 402
-redirects["ics.uci.edu"] = 5
 
-subdomains["ics.uci.edu"] = 405
+# page_word_counts["ics.uci.edu"] = 1001
+# common_words["the"] = 500
+# subdomains["ics.uci.edu"] = 402
+# redirects["ics.uci.edu"] = 5
+#
+# subdomains["ics.uci.edu"] = 405
 
-scraper.create_analytics_files(page_word_counts, common_words, subdomains, redirects, general_analytics)
+# scraper.create_analytics_files(page_word_counts, common_words, subdomains, redirects, general_analytics)
 
 
 
