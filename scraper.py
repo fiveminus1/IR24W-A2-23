@@ -126,7 +126,7 @@ def count_words(soup: BeautifulSoup, common_words: defaultdict, stopwords: set) 
 def is_redirect(url: str, resp_url: str):
     parsed_url = urlparse(url)
     parsed_grabbed_url = urlparse(resp_url)
-    return parsed_url.scheme != parsed_grabbed_url.scheme or parsed_url.netloc != parsed_grabbed_url.netloc or parsed_url.path.rstrip(
+    return parsed_url.scheme != parsed_grabbed_url.scheme or parsed_url.netloc.lstrip("www.") != parsed_grabbed_url.netloc.lstrip("www.") or parsed_url.path.rstrip(
         '/') != parsed_grabbed_url.path.rstrip('/')
 
 def is_valid(url):
