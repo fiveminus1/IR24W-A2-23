@@ -9,7 +9,7 @@ stopwords = set(line.strip() for line in open('stopwords.txt'))
 page_word_counts = defaultdict(int)
 common_words = defaultdict(int)
 subdomains = defaultdict(int)
-redirects = defaultdict(int)
+redirects = defaultdict(str)
 general_analytics = defaultdict(int)
 
 def scraper(url: str, resp: utils.response.Response) -> list:
@@ -27,13 +27,18 @@ def extract_next_links(url, resp):
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
 
+
     unique_pages = set()
     next_links = list()
-    parsed_url = urlparse(url)
+    parsed_url = urlparse(resp.url)
 
-    if resp.status == 200:
+    if resp.status == 200 :
         soup = BeautifulSoup(resp.raw_response.content, 'lxml')
-        if is_valid(url):
+
+        if is_redirect(url, resp.url): # detects if the provided url was a redirect and if so, adds to redirects defaultdict (#5 behavior)
+            redirects[url] = resp.url
+
+        if is_valid(resp.url):
             word_count = count_words(soup, common_words, stopwords) # writes word count of this page to page_word_counts dict (#2 report) and writes common words (#3 report)
             page_word_counts[url] = word_count
 
@@ -101,6 +106,13 @@ def count_words(soup: BeautifulSoup, common_words: defaultdict, stopwords: set) 
 
     word_count = len(text)
     return word_count
+
+
+def is_redirect(url: str, resp_url: str):
+    parsed_url = urlparse(url)
+    parsed_grabbed_url = urlparse(resp_url)
+    return parsed_url.scheme != parsed_grabbed_url.scheme or parsed_url.netloc != parsed_grabbed_url.netloc or parsed_url.path.rstrip(
+        '/') != parsed_grabbed_url.path.rstrip('/')
 
 def is_valid(url):
     # Decide whether to crawl this url or not. 
