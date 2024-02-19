@@ -1,13 +1,15 @@
 import re
-import urllib.parse
-from urllib.parse import urlparse
-import requests
 import json
-import datetime
-from bs4 import BeautifulSoup
-
 import utils.response
+from urllib.parse import urlparse
+from bs4 import BeautifulSoup
+from collections import defaultdict
 
+page_word_counts = defaultdict(int)
+common_words = defaultdict(int)
+subdomains = defaultdict(int)
+redirects = defaultdict(int)
+general_analytics = defaultdict(int)
 
 def scraper(url: str, resp: utils.response.Response) -> list:
     links = extract_next_links(url, resp)
@@ -25,17 +27,13 @@ def extract_next_links(url, resp):
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
     stopwords = set(line.strip() for line in open('stopwords.txt'))
 
-
-
-    page_and_counters = open("analytics/page_and_wordcounters.txt", 'w')
-    page_word_dict = dict()
     unique_pages = set()
     next_links = list()
+
     if resp.status == 200:
         soup = BeautifulSoup(resp.raw_response.content, 'lxml')
         if is_valid(url):
-            page_and_counters.write(str(url) + ' ' + str(count_words(soup)))
-            page_word_dict[url] = count_words(soup)
+            page_word_counts[url] = count_words(soup)
 
         for a in soup.find_all('a'):
             link = a.get('href')
@@ -44,24 +42,40 @@ def extract_next_links(url, resp):
                 next_links.append(defragged_link)
                 unique_pages.add(defragged_link)
 
+    create_analytics_files(page_word_counts, common_words, subdomains, redirects, general_analytics)
 
     return next_links
 
-def create_analytics_files(page_word_counts: dict, common_words: dict, subdomains: dict, redirects: dict) -> None:
+def create_analytics_files(page_word_counts: defaultdict, common_words: defaultdict,
+                           subdomains: defaultdict, redirects: defaultdict,
+                           general_analytics: defaultdict) -> None:
     '''
-    Creates the following analytics json files
+    Creates the following analytics json files from defaultdicts
     1. Pages and their word counts
     2. Common words
     3. Subdomains
     4. Redirects
+    5. General analytics
 
     :return: Returns a tuple of three paths
     '''
-    current_date_time = datetime.datetime.now().strftime("%m-%d %H.%m")
+    page_word_counts_path = "analytics/page_word_counts.json" # + str(current_date_time) + ".json"
+    common_words_path = "analytics/common_words.json" #+ str(current_date_time) + ".json"
+    subdomains_path = "analytics/subdomains.json" #+ str(current_date_time) + ".json"
+    redirects_path = "analytics/redirects.json" #+ str(current_date_time) + ".json"
+    general_analytics_path = "analytics/general_analytics.json"
 
 
-def close_analytics_files() -> None:
-    pass
+    with open(page_word_counts_path, 'w') as pwc_path:
+        json.dump(page_word_counts, pwc_path)
+    with open(common_words_path, 'w') as cw_path:
+        json.dump(common_words, cw_path)
+    with open(subdomains_path, 'w') as sub_path:
+        json.dump(subdomains, sub_path)
+    with open(redirects_path, 'w') as redirects_path:
+        json.dump(redirects, redirects_path)
+    with open(general_analytics_path, 'w') as ge_path:
+        json.dump(general_analytics, ge_path)
 
 def count_words(soup: BeautifulSoup) -> int:
     text = soup.get_text()

@@ -3,6 +3,8 @@ import requests
 import datetime
 import scraper
 import urllib.parse
+import json
+from collections import defaultdict
 
 #url = 'https://crawler-test.com/links/page_with_external_links'
 url = "https://ics.uci.edu"
@@ -10,16 +12,23 @@ url = "https://ics.uci.edu"
 grab = requests.get(url)
 soup = BeautifulSoup(grab.text, 'lxml')
 
-page_and_counters = open("analytics/page_and_wordcounters.txt", 'w')
-page_word_dict = dict()
-unique_pages = set()
-next_links = list()
 
-dt = datetime.datetime.now()
-current_date_time = dt.strftime("%m-%d %H.%m")
+page_word_counts = defaultdict(int)
+common_words = defaultdict(int)
+subdomains = defaultdict(int)
+redirects = defaultdict(int)
+general_analytics = defaultdict(int)
+
+page_word_counts["ics.uci.edu"] = 1001
+common_words["the"] = 500
+subdomains["ics.uci.edu"] = 402
+redirects["ics.uci.edu"] = 5
+
+subdomains["ics.uci.edu"] = 405
+
+scraper.create_analytics_files(page_word_counts, common_words, subdomains, redirects, general_analytics)
 
 
-print(current_date_time)
 
 # if scraper.is_valid(url):
 #     page_and_counters.write(str(url) + ' ' + str(scraper.count_words(soup)))
