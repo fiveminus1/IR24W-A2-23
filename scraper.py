@@ -10,7 +10,9 @@ page_word_counts = defaultdict(int)
 common_words = defaultdict(int)
 subdomains = defaultdict(int)
 redirects = defaultdict(str)
+visited_pages = defaultdict(int)
 general_analytics = defaultdict(int)
+
 
 def scraper(url: str, resp: utils.response.Response) -> list:
     links = extract_next_links(url, resp)
@@ -18,7 +20,8 @@ def scraper(url: str, resp: utils.response.Response) -> list:
 
 def extract_next_links(url, resp):
     # Implementation required.
-    # url: the URL that was used to get the page
+    # url: the URL that was used to
+    # get the page
     # resp.url: the actual url of the page
     # resp.status: the status code returned by the server. 200 is OK, you got the page. Other numbers mean that there was some kind of problem.
     # resp.error: when status is not 200, you can check the error here, if needed.
@@ -32,7 +35,7 @@ def extract_next_links(url, resp):
     next_links = list()
     parsed_url = urlparse(resp.url)
 
-    if resp.status == 200 :
+    if resp.status == 200 and not is_crawler_trap(resp.url, resp):
         soup = BeautifulSoup(resp.raw_response.content, 'lxml')
 
         if is_redirect(url, resp.url): # detects if the provided url was a redirect and if so, adds to redirects defaultdict (#5 behavior)
@@ -56,13 +59,23 @@ def extract_next_links(url, resp):
                     general_analytics["uniques"] += 1 # if site not found in unique pages, adds to general analytics unique page counter (#1 report)
                 next_links.append(defragged_link)
                 unique_pages.add(defragged_link)
+                visited_pages[defragged_link] += 1
 
-    create_analytics_files(page_word_counts, common_words, subdomains, redirects, general_analytics)
+    create_analytics_files(page_word_counts, common_words, subdomains, redirects, visited_pages, general_analytics)
     print("Current general analytics: " + str(general_analytics))
     return next_links
 
+
+def is_crawler_trap(url, resp) -> bool:
+    if redirects[url] == resp.url: # if a page has already been redirected, we can skip it and/or assume it's a trap
+        return True
+    if visited_pages[url] > 10: # test threshold; if a page has already been visited over 10 times, we can stop visiting it and/or assume it's a trap
+        return True
+
+
+
 def create_analytics_files(page_word_counts: defaultdict, common_words: defaultdict,
-                           subdomains: defaultdict, redirects: defaultdict,
+                           subdomains: defaultdict, redirects: defaultdict, visited_pages: defaultdict,
                            general_analytics: defaultdict) -> None:
     '''
     Creates the following analytics json files from defaultdicts
@@ -70,7 +83,8 @@ def create_analytics_files(page_word_counts: defaultdict, common_words: defaultd
     2. Common words
     3. Subdomains
     4. Redirects
-    5. General analytics
+    5. Pages visited
+    6. General analytics
 
     :return: Returns a tuple of three paths
     '''
@@ -78,8 +92,8 @@ def create_analytics_files(page_word_counts: defaultdict, common_words: defaultd
     common_words_path = "analytics/common_words.json" #+ str(current_date_time) + ".json"
     subdomains_path = "analytics/subdomains.json" #+ str(current_date_time) + ".json"
     redirects_path = "analytics/redirects.json" #+ str(current_date_time) + ".json"
+    visited_pages_path = "analytics/visited_pages.json"
     general_analytics_path = "analytics/general_analytics.json"
-
 
     with open(page_word_counts_path, 'w') as pwc_path:
         json.dump(page_word_counts, pwc_path)
@@ -87,8 +101,10 @@ def create_analytics_files(page_word_counts: defaultdict, common_words: defaultd
         json.dump(common_words, cw_path)
     with open(subdomains_path, 'w') as sub_path:
         json.dump(subdomains, sub_path)
-    with open(redirects_path, 'w') as redirects_path:
-        json.dump(redirects, redirects_path)
+    with open(redirects_path, 'w') as re_path:
+        json.dump(redirects, re_path)
+    with open(visited_pages_path, 'w') as vp_path:
+        json.dump(visited_pages, vp_path)
     with open(general_analytics_path, 'w') as ge_path:
         json.dump(general_analytics, ge_path)
 

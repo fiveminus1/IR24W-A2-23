@@ -2,32 +2,34 @@ from bs4 import BeautifulSoup
 import requests
 import datetime
 import scraper
+import utils.download
 from urllib.parse import urlparse
 import json
 from collections import defaultdict
 
 #url = 'https://crawler-test.com/links/page_with_external_links'
-#url = "https://cs.ics.uci.edu"
+url = "https://cs.ics.uci.edu"
 #url = "https://ics.uci.edu/~thornton/ics46/Notes/SmartPointers/"
 #url = "https://crawler-test.com/redirects/redirect_1"
-url = "https://httpstat.us/200"
+#url = "https://crawler-test.com/redirects/infinite_redirect"
 grab = requests.get(url)
+
 soup = BeautifulSoup(grab.text, 'lxml')
-stopwords = set(line.strip() for line in open('stopwords.txt'))
 
-if soup.get_text():
-    print("lol")
-
-
-# print(parsed_url.hostname.split('.'))
 
 page_word_counts = defaultdict(int)
 common_words = defaultdict(int)
 #common_words = OrderedDict(sorted())
 
 subdomains = defaultdict(int)
-redirects = defaultdict(int)
+redirects = defaultdict(str)
 general_analytics = defaultdict(int)
+
+if scraper.is_redirect(url, grab.url):
+    redirects[url] = grab.url
+
+if redirects[url] == grab.url:
+    print("lol")
 
 # word_count = scraper.count_words(soup, common_words, stopwords)
 # if word_count > general_analytics["longest_page_word_count"]:  # if this page's word count is greater than the longest page, set it in general analytics (#2 report)
