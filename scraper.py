@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 from collections import defaultdict
 
+stopwords = set(line.strip() for line in open('stopwords.txt'))
 page_word_counts = defaultdict(int)
 common_words = defaultdict(int)
 subdomains = defaultdict(int)
@@ -25,7 +26,6 @@ def extract_next_links(url, resp):
     #         resp.raw_response.url: the url, again
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
-    stopwords = set(line.strip() for line in open('stopwords.txt'))
 
     unique_pages = set()
     next_links = list()
@@ -34,8 +34,13 @@ def extract_next_links(url, resp):
     if resp.status == 200:
         soup = BeautifulSoup(resp.raw_response.content, 'lxml')
         if is_valid(url):
-            page_word_counts[url] = count_words(soup) # writes word count of this page to page_word_counts dict (#2 requirement)
-            if parsed_url.hostname[0] != "ics" and parsed_url.hostname[1] == "ics": #writes to subdomain dict for urls under ics.uci.edu domain (#4 requirement)
+            word_count = count_words(soup, common_words, stopwords) # writes word count of this page to page_word_counts dict (#2 report)
+            page_word_counts[url] = word_count
+
+            if word_count > general_analytics["longest_page_word_count"]: #if this page's word count is greater than the longest page, set it in general analytics (#2 report)
+                general_analytics["longest_page_word_count"] = word_count
+
+            if parsed_url.hostname[0] != "ics" and parsed_url.hostname[1] == "ics": #writes to subdomain dict for urls under ics.uci.edu domain (#4 report)
                 subdomains[str(parsed_url.hostname)] += 1
 
         for a in soup.find_all('a'):
@@ -43,12 +48,12 @@ def extract_next_links(url, resp):
             if is_valid(link):
                 defragged_link = link.split("#")[0]
                 if defragged_link not in unique_pages:
-                    general_analytics["uniques"] += 1 # if site not found in unique pages, adds to general analytics unique page counter (#1 requirement)
+                    general_analytics["uniques"] += 1 # if site not found in unique pages, adds to general analytics unique page counter (#1 report)
                 next_links.append(defragged_link)
                 unique_pages.add(defragged_link)
 
     create_analytics_files(page_word_counts, common_words, subdomains, redirects, general_analytics)
-
+    print("Current general analytics: " + str(general_analytics))
     return next_links
 
 def create_analytics_files(page_word_counts: defaultdict, common_words: defaultdict,
@@ -82,9 +87,19 @@ def create_analytics_files(page_word_counts: defaultdict, common_words: defaultd
     with open(general_analytics_path, 'w') as ge_path:
         json.dump(general_analytics, ge_path)
 
-def count_words(soup: BeautifulSoup) -> int:
-    text = soup.get_text()
-    word_count = len(text.split())
+def count_words(soup: BeautifulSoup, common_words: defaultdict, stopwords: set) -> int:
+    '''
+    Counts the number of words in a BeautifulSoup object and modifies the common_words defaultdict
+
+    :param soup: BeautifulSoup object constructed from a website
+    :return: Returns total number of words
+    '''
+    text = soup.get_text().split() # O(n) to split
+    for word in text: # Counts each word in the text and adds it to common_words dict (#3 report)
+        if word not in stopwords:
+            common_words[word] += 1
+
+    word_count = len(text)
     return word_count
 
 def is_valid(url):
