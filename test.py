@@ -10,11 +10,11 @@ from collections import defaultdict
 #url = 'https://crawler-test.com/links/page_with_external_links'
 #url = "https://archive.ics.uci.edu/ml/datasets/Letter+Recognition"
 #url = "https://ics.uci.edu/~thornton/ics46/Notes/SmartPointers/"
-#url = "https://crawler-test.com/redirects/redirect_1"
-url = "https://www.ics.uci.edu"
+url = "https://crawler-test.com"
+#url = "https://www.stat.uci.edu/news/page/14"
 grab = requests.get(url)
 
-print(scraper.is_valid(url))
+print(scraper.is_redirect(url, grab.url))
 
 soup = BeautifulSoup(grab.text, 'lxml')
 

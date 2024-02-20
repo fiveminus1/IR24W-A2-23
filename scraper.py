@@ -36,7 +36,7 @@ def extract_next_links(url, resp):
     next_links = list()
     try:
         parsed_url = urlparse(resp.url)
-        if resp.status == 200 and not is_crawler_trap(resp.url, resp): #check that content is greater than 10 (not a dead link)
+        if resp.status == 200 and not is_crawler_trap(resp.url, resp) and len(resp.raw_response.content) > 10: #check that content is greater than 10 (not a dead link)
             soup = BeautifulSoup(resp.raw_response.content, 'lxml')
 
             if is_redirect(url, resp.url): # detects if the provided url was a redirect and if so, adds to redirects defaultdict (#5 behavior)
@@ -57,7 +57,7 @@ def extract_next_links(url, resp):
                 if is_valid(link):
                     defragged_link = link.split("#")[0]
                     if defragged_link not in unique_pages:
-                        general_analytics["uniques"] += 1 # if site not found in unique pages, adds to general analytics unique page counter (#1 report)
+                        general_analytics["uniques"] = len(unique_pages) # if site not found in unique pages, adds to general analytics unique page counter (#1 report)
                     if not is_crawler_trap(defragged_link, resp):
                         next_links.append(defragged_link)
                         unique_pages.add(defragged_link)
@@ -65,8 +65,8 @@ def extract_next_links(url, resp):
 
         create_analytics_files(page_word_counts, common_words, subdomains, redirects, visited_pages, general_analytics)
         print("Current general analytics: " + str(general_analytics))
-    except:
-        pass
+    except Exception as ex:
+        print("error", ex)
     finally:
         return next_links
 
@@ -137,10 +137,11 @@ def count_words(soup: BeautifulSoup, common_words: defaultdict, stopwords: set) 
 
 
 def is_redirect(url: str, resp_url: str):
-    parsed_url = urlparse(url)
-    parsed_grabbed_url = urlparse(resp_url)
-    return parsed_url.scheme != parsed_grabbed_url.scheme or parsed_url.netloc.lstrip("www.") != parsed_grabbed_url.netloc.lstrip("www.") or parsed_url.path.rstrip(
-        '/') != parsed_grabbed_url.path.rstrip('/')
+    return url.rstrip("/") != resp_url.rstrip("/")
+    # parsed_url = urlparse(url)
+    # parsed_grabbed_url = urlparse(resp_url)
+    # return parsed_url.scheme != parsed_grabbed_url.scheme or parsed_url.netloc.lstrip("www.") != parsed_grabbed_url.netloc.lstrip("www.") or parsed_url.path.rstrip(
+    #     '/') != parsed_grabbed_url.path.rstrip('/')
 
 def is_valid(url):
     # Decide whether to crawl this url or not. 
