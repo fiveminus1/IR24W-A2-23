@@ -12,6 +12,7 @@ subdomains = defaultdict(int)
 redirects = defaultdict(str)
 visited_pages = defaultdict(int)
 general_analytics = defaultdict(int)
+unique_pages = set()
 
 
 def scraper(url: str, resp: utils.response.Response) -> list:
@@ -31,7 +32,7 @@ def extract_next_links(url, resp):
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
 
 
-    unique_pages = set()
+
     next_links = list()
     try:
         parsed_url = urlparse(resp.url)
