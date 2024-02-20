@@ -11,12 +11,10 @@ from collections import defaultdict
 #url = "https://archive.ics.uci.edu/ml/datasets/Letter+Recognition"
 #url = "https://ics.uci.edu/~thornton/ics46/Notes/SmartPointers/"
 #url = "https://crawler-test.com/redirects/redirect_1"
-url = "https://wics.ics.uci.edu/events/2019-02-01/"
+url = "https://www.ics.uci.edu"
 grab = requests.get(url)
 
-print(urlparse(url).path)
-
-print(scraper.is_crawler_trap(url, grab))
+print(scraper.is_valid(url))
 
 soup = BeautifulSoup(grab.text, 'lxml')
 
