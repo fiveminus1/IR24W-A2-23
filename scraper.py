@@ -57,9 +57,10 @@ def extract_next_links(url, resp):
                     defragged_link = link.split("#")[0]
                     if defragged_link not in unique_pages:
                         general_analytics["uniques"] += 1 # if site not found in unique pages, adds to general analytics unique page counter (#1 report)
-                    next_links.append(defragged_link)
-                    unique_pages.add(defragged_link)
-                    visited_pages[defragged_link] += 1
+                    if not is_crawler_trap(defragged_link, resp):
+                        next_links.append(defragged_link)
+                        unique_pages.add(defragged_link)
+                        visited_pages[defragged_link] += 1
 
         create_analytics_files(page_word_counts, common_words, subdomains, redirects, visited_pages, general_analytics)
         print("Current general analytics: " + str(general_analytics))
@@ -150,6 +151,7 @@ def is_valid(url):
             return False
         if parsed.hostname.lstrip("www.") not in set(["ics.uci.edu", "cs.uci.edu", "informatics.uci.edu", "stat.uci.edu"]):
             return False
+
         return not re.match(
             r".*\.(css|js|bmp|gif|jpe?g|ico"
             + r"|png|tiff?|mid|mp2|mp3|mp4"
