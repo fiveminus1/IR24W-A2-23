@@ -34,8 +34,9 @@ def extract_next_links(url, resp):
     unique_pages = set()
     next_links = list()
     parsed_url = urlparse(resp.url)
-
+    print("status: " , int(resp.status), is_crawler_trap(resp.url, resp))
     if resp.status == 200 and not is_crawler_trap(resp.url, resp): #check that content is greater than 10 (not a dead link)
+        print("processing")
         soup = BeautifulSoup(resp.raw_response.content, 'lxml')
 
         if is_redirect(url, resp.url): # detects if the provided url was a redirect and if so, adds to redirects defaultdict (#5 behavior)
@@ -62,6 +63,8 @@ def extract_next_links(url, resp):
                 visited_pages[defragged_link] += 1
                 print(next_links)
 
+    else:
+        print("not processing")
     create_analytics_files(page_word_counts, common_words, subdomains, redirects, visited_pages, general_analytics)
     print("Current general analytics: " + str(general_analytics))
     return next_links
