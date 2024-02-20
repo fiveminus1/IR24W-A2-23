@@ -33,41 +33,40 @@ def extract_next_links(url, resp):
 
     unique_pages = set()
     next_links = list()
-    parsed_url = urlparse(resp.url)
-    print("status: " , int(resp.status), is_crawler_trap(resp.url, resp))
-    if resp.status == 200 and not is_crawler_trap(resp.url, resp): #check that content is greater than 10 (not a dead link)
-        print("processing")
-        soup = BeautifulSoup(resp.raw_response.content, 'lxml')
+    try:
+        parsed_url = urlparse(resp.url)
+        if resp.status == 200 and not is_crawler_trap(resp.url, resp): #check that content is greater than 10 (not a dead link)
+            soup = BeautifulSoup(resp.raw_response.content, 'lxml')
 
-        if is_redirect(url, resp.url): # detects if the provided url was a redirect and if so, adds to redirects defaultdict (#5 behavior)
-            redirects[url] = resp.url
+            if is_redirect(url, resp.url): # detects if the provided url was a redirect and if so, adds to redirects defaultdict (#5 behavior)
+                redirects[url] = resp.url
 
-        if is_valid(resp.url):
-            word_count = count_words(soup, common_words, stopwords) # writes word count of this page to page_word_counts dict (#2 report) and writes common words (#3 report)
-            page_word_counts[url] = word_count
+            if is_valid(resp.url):
+                word_count = count_words(soup, common_words, stopwords) # writes word count of this page to page_word_counts dict (#2 report) and writes common words (#3 report)
+                page_word_counts[url] = word_count
 
-            if word_count > general_analytics["longest_page_word_count"]: #if this page's word count is greater than the longest page, set it in general analytics (#2 report)
-                general_analytics["longest_page_word_count"] = word_count
+                if word_count > general_analytics["longest_page_word_count"]: #if this page's word count is greater than the longest page, set it in general analytics (#2 report)
+                    general_analytics["longest_page_word_count"] = word_count
 
-            if parsed_url.hostname[0] != "ics" and parsed_url.hostname[1] == "ics": #writes to subdomain dict for urls under ics.uci.edu domain (#4 report)
-                subdomains[str(parsed_url.hostname)] += 1
+                if parsed_url.hostname[0] != "ics" and parsed_url.hostname[1] == "ics": #writes to subdomain dict for urls under ics.uci.edu domain (#4 report)
+                    subdomains[str(parsed_url.hostname)] += 1
 
-        for a in soup.find_all('a'):
-            link = a.get('href')
-            if is_valid(link):
-                defragged_link = link.split("#")[0]
-                if defragged_link not in unique_pages:
-                    general_analytics["uniques"] += 1 # if site not found in unique pages, adds to general analytics unique page counter (#1 report)
-                next_links.append(defragged_link)
-                unique_pages.add(defragged_link)
-                visited_pages[defragged_link] += 1
-                print(next_links)
+            for a in soup.find_all('a'):
+                link = a.get('href')
+                if is_valid(link):
+                    defragged_link = link.split("#")[0]
+                    if defragged_link not in unique_pages:
+                        general_analytics["uniques"] += 1 # if site not found in unique pages, adds to general analytics unique page counter (#1 report)
+                    next_links.append(defragged_link)
+                    unique_pages.add(defragged_link)
+                    visited_pages[defragged_link] += 1
 
-    else:
-        print("not processing")
-    create_analytics_files(page_word_counts, common_words, subdomains, redirects, visited_pages, general_analytics)
-    print("Current general analytics: " + str(general_analytics))
-    return next_links
+        create_analytics_files(page_word_counts, common_words, subdomains, redirects, visited_pages, general_analytics)
+        print("Current general analytics: " + str(general_analytics))
+    except:
+        pass
+    finally:
+        return next_links
 
 
 def is_crawler_trap(url, resp) -> bool:
