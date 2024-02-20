@@ -10,11 +10,18 @@ from collections import defaultdict
 #url = 'https://crawler-test.com/links/page_with_external_links'
 #url = "https://archive.ics.uci.edu/ml/datasets/Letter+Recognition"
 #url = "https://ics.uci.edu/~thornton/ics46/Notes/SmartPointers/"
-url = "https://crawler-test.com"
-#url = "https://www.stat.uci.edu/news/page/14"
+#url = "https://crawler-test.com"
+url = "https://vision.ics.uci.edu"
+parsed_url = urlparse(url)
+print(parsed_url.hostname)
 grab = requests.get(url)
 
-print(scraper.is_redirect(url, grab.url))
+
+host_name = parsed_url.hostname.lstrip("www.").split(".")
+print(host_name)
+
+if host_name[0] != "ics" and host_name[1] == "ics":
+    print("ahhhh")
 
 soup = BeautifulSoup(grab.text, 'lxml')
 
