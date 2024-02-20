@@ -54,7 +54,7 @@ def extract_next_links(url, resp):
 
             for a in soup.find_all('a'):
                 link = a.get('href')
-                if is_valid(link):
+                if link != "" and is_valid(link):
                     defragged_link = link.split("#")[0]
                     if defragged_link not in unique_pages:
                         general_analytics["uniques"] = len(unique_pages) # if site not found in unique pages, adds to general analytics unique page counter (#1 report)
@@ -73,7 +73,7 @@ def extract_next_links(url, resp):
 
 def is_crawler_trap(url, resp) -> bool:
     year_pattern = r'\b(?:19|20)\d{2}\b'
-    if redirects[url] == resp.url: # if a page has already been redirected to the same page, we can skip it and/or assume it's a trap
+    if url in redirects.keys() and redirects[url] == resp.url: # if a page has already been redirected to the same page, we can skip it and/or assume it's a trap
         return True
     if visited_pages[url] > 10: # test threshold; if a page has already been visited over 10 times, we can stop visiting it and/or assume it's a trap
         return True
