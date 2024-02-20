@@ -32,7 +32,6 @@ def extract_next_links(url, resp):
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
 
 
-
     next_links = list()
     try:
         parsed_url = urlparse(resp.url)
@@ -101,10 +100,10 @@ def create_analytics_files(page_word_counts: defaultdict, common_words: defaultd
 
     :return: Returns a tuple of three paths
     '''
-    page_word_counts_path = "analytics/page_word_counts.json" # + str(current_date_time) + ".json"
-    common_words_path = "analytics/common_words.json" #+ str(current_date_time) + ".json"
-    subdomains_path = "analytics/subdomains.json" #+ str(current_date_time) + ".json"
-    redirects_path = "analytics/redirects.json" #+ str(current_date_time) + ".json"
+    page_word_counts_path = "analytics/page_word_counts.json"
+    common_words_path = "analytics/common_words.json"
+    subdomains_path = "analytics/subdomains.json"
+    redirects_path = "analytics/redirects.json"
     visited_pages_path = "analytics/visited_pages.json"
     general_analytics_path = "analytics/general_analytics.json"
 
@@ -139,10 +138,6 @@ def count_words(soup: BeautifulSoup, common_words: defaultdict, stopwords: set) 
 
 def is_redirect(url: str, resp_url: str):
     return url.rstrip("/") != resp_url.rstrip("/")
-    # parsed_url = urlparse(url)
-    # parsed_grabbed_url = urlparse(resp_url)
-    # return parsed_url.scheme != parsed_grabbed_url.scheme or parsed_url.netloc.lstrip("www.") != parsed_grabbed_url.netloc.lstrip("www.") or parsed_url.path.rstrip(
-    #     '/') != parsed_grabbed_url.path.rstrip('/')
 
 def page_in_subdomain(parsed_url):
     subdomains = {"ics.uci.edu", "cs.uci.edu", "informatics.uci.edu", "stat.uci.edu"}
@@ -162,8 +157,6 @@ def is_valid(url):
             return False
         if not page_in_subdomain(parsed):
             return False
-        # if parsed.hostname.lstrip("www.") not in set(["ics.uci.edu", "cs.uci.edu", "informatics.uci.edu", "stat.uci.edu"]):
-        #     return False
 
         return not re.match(
             r".*\.(css|js|bmp|gif|jpe?g|ico"
