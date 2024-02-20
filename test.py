@@ -7,21 +7,16 @@ from urllib.parse import urlparse
 import json
 from collections import defaultdict
 
-#url = 'https://crawler-test.com/links/page_with_external_links'
+url = 'https://crawler-test.com/links/page_with_external_links'
 #url = "https://archive.ics.uci.edu/ml/datasets/Letter+Recognition"
 #url = "https://ics.uci.edu/~thornton/ics46/Notes/SmartPointers/"
 #url = "https://crawler-test.com"
-url = "https://vision.ics.uci.edu"
-parsed_url = urlparse(url)
-print(parsed_url.hostname)
+#url = "https://vision.ics.uci.edu"
+#parsed_url = urlparse(url)
+
 grab = requests.get(url)
 
-
-host_name = parsed_url.hostname.lstrip("www.").split(".")
-print(host_name)
-
-if host_name[0] != "ics" and host_name[1] == "ics":
-    print("ahhhh")
+print(scraper.is_valid(url))
 
 soup = BeautifulSoup(grab.text, 'lxml')
 

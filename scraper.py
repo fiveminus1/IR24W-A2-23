@@ -144,6 +144,14 @@ def is_redirect(url: str, resp_url: str):
     # return parsed_url.scheme != parsed_grabbed_url.scheme or parsed_url.netloc.lstrip("www.") != parsed_grabbed_url.netloc.lstrip("www.") or parsed_url.path.rstrip(
     #     '/') != parsed_grabbed_url.path.rstrip('/')
 
+def page_in_subdomain(parsed_url):
+    subdomains = {"ics.uci.edu", "cs.uci.edu", "informatics.uci.edu", "stat.uci.edu"}
+    hostname = parsed_url.hostname.split(".")
+    if len(hostname) < 3:
+        return False
+    check_subdomain = '.'.join(hostname[-3:])
+    return check_subdomain in subdomains
+
 def is_valid(url):
     # Decide whether to crawl this url or not. 
     # If you decide to crawl it, return True; otherwise return False.
@@ -152,8 +160,10 @@ def is_valid(url):
         parsed = urlparse(url)
         if parsed.scheme not in set(["http", "https"]):
             return False
-        if parsed.hostname.lstrip("www.") not in set(["ics.uci.edu", "cs.uci.edu", "informatics.uci.edu", "stat.uci.edu"]):
+        if not page_in_subdomain(parsed):
             return False
+        # if parsed.hostname.lstrip("www.") not in set(["ics.uci.edu", "cs.uci.edu", "informatics.uci.edu", "stat.uci.edu"]):
+        #     return False
 
         return not re.match(
             r".*\.(css|js|bmp|gif|jpe?g|ico"
